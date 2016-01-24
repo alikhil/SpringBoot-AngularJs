@@ -47,14 +47,14 @@ public class UploadController {
 
     private void deleteJavaFile(String path) throws IOException {
         Files.deleteIfExists(Paths.get(path));
+        String dirName = path.substring(0, path.lastIndexOf("\\"));
+        Files.deleteIfExists(Paths.get(dirName));
     }
 
     private static ArrayList<String> checkStyle(String path) throws IOException {
         Runtime rt = Runtime.getRuntime();
-        String checkerPath = "java -jar C:\\Users\\a.khilazhev\\algs4\\checkstyle-6.9\\checkstyle-6.9.jar";
-        String[] commands = {checkerPath, path};
-        Process proc = rt.exec("cmd.exe /c checkstyle-algs4 " + path);
-                // new ProcessBuilder("checkstyle-algs4", path).start();
+        String checkerRunCommand = getChecker(System.getProperty("os.name"));
+        Process proc = rt.exec(checkerRunCommand + path);
 
         BufferedReader stdInput = new BufferedReader(new
                 InputStreamReader(proc.getInputStream()));
@@ -72,6 +72,12 @@ public class UploadController {
             result.add(s);
         }
         return result;
+    }
+
+    private static String getChecker(String osName) {
+        if (osName.contains("Windows"))
+            return "cmd.exe /c checkstyle-algs4 ";
+        return "checkstyle-algs4 ";
     }
 
     private String uploadJavaFile (MultipartFile file) throws IOException {
