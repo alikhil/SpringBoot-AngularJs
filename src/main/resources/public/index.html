@@ -1,24 +1,56 @@
 <!doctype html>
 <html>
 <head>
-    <title>Hello AngularJS</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="site.css" rel="stylesheet">
     <style type="text/css">
         [ng\:cloak], [ng-cloak], .ng-cloak {
             display: none !important;
         }
     </style>
+    <title>Hello AngularJS</title>
 </head>
 
-<body ng-app="hello">
+<body ng-app="upload">
 <div class="container">
-    <h1>Greeting</h1>
-    <div ng-controller="home" ng-cloak class="ng-cloak">
-        <p>The ID is {{greeting.id}}</p>
-        <p>The content is {{greeting.content}}</p>
+
+    <div ng-controller="uploadCtrl as upCtrl" class="jumbotron">
+        <h1>Check your code style</h1>
+        <p>Select .java file</p>
+
+        <div id="file-name">
+
+        </div>
+        <label for="file-upload" class="btn btn-info custom-file-upload">
+            Choose File
+        </label>
+        <input id="file-upload" onchange="fileChange(this)" type="file" file-model="javaFile"/>
+        <button ng-click="uploadFile()" class="btn btn-success" >Upload File</button>
+        <br/>
+        <div ng-show="loading">
+            <div class="text-success"><h3>Loading...</h3></div>
+        </div>
+        <div ng-model="result" ng-repeat="message in result">
+            <p>{{ message }}</p>
+        </div>
+        <div ng-show="accepted" class="text-success">
+             <h3>Code style accepted <span class="glyphicon glyphicon-ok"></span></h3>
+        </div>
     </div>
+
 </div>
-<script src="js/angular.min.js" type="text/javascript"></script>
-<script src="js/hello.js"></script>
+
+    <script src="js/angular.min.js" type="text/javascript"></script>
+    <script src="js/upload.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript">
+        function fileChange(data) {
+            $fileName = data.files.length ? data.files[0].name : '';
+            $("#file-name").text($fileName);
+        }
+    </script>
 </body>
 </html>
