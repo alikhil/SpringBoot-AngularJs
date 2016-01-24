@@ -48,7 +48,7 @@
     app.directive('styleCheck', function() {
         return {
             restrict: 'E',
-            templateUrl: 'style-check.html',
+            templateUrl: 'templates/style-check.html',
             controller: ['$scope', 'fileUpload', function ($scope, fileUpload) {
                 $scope.result = [];
                 $scope.loading = false;
@@ -78,5 +78,18 @@
 
     }]);
 
+    app.directive('findBugs', function () {
+        return {
+            restrict: 'E',
+            templateUrl: 'templates/find-bugs.html'
+        };
+    });
+
+    app.directive('help', function() {
+        return {
+            restrict: 'E',
+            templateUrl: 'templates/help.html'
+        };
+    });
 })();
 
