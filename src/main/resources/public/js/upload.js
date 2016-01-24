@@ -45,17 +45,35 @@
         }
     }]);
 
-    app.controller('uploadCtrl', ['$scope', 'fileUpload', function($scope, fileUpload){
-        $scope.result = [ ];
-        $scope.loading = false;
-        $scope.accepted = false;
+    app.directive('styleCheck', function() {
+        return {
+            restrict: 'E',
+            templateUrl: 'style-check.html',
+            controller: ['$scope', 'fileUpload', function ($scope, fileUpload) {
+                $scope.result = [];
+                $scope.loading = false;
+                $scope.accepted = false;
 
-        $scope.uploadFile = function(){
-            $scope.accepted = false;
-            var file = $scope.javaFile;
-            $scope.loading = true;
-            var uploadUrl = "/upload";
-            fileUpload.uploadFileToUrl(file, uploadUrl, $scope);
+                $scope.uploadFile = function () {
+                    $scope.accepted = false;
+                    var file = $scope.javaFile;
+                    $scope.loading = true;
+                    var uploadUrl = "/upload";
+                    fileUpload.uploadFileToUrl(file, uploadUrl, $scope);
+                };
+
+            }],
+            controllerAs: 'upCtrl'
+        };
+    });
+
+    app.controller('panelController', ['$scope',function($scope){
+        $scope.selected = 1;
+        $scope.select = function(newVal) {
+            this.selected = newVal;
+        };
+        $scope.isSelect = function(selected) {
+            return $scope.selected === selected;
         };
 
     }]);

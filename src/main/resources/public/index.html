@@ -15,31 +15,16 @@
 </head>
 
 <body ng-app="upload">
-<div class="container">
+<div class="container" ng-controller="panelController as panelCtrl">
 
-    <div ng-controller="uploadCtrl as upCtrl" class="jumbotron">
-        <h1>Check your code style</h1>
-        <p>Select .java file</p>
-
-        <div id="file-name">
-
-        </div>
-        <label for="file-upload" class="btn btn-info custom-file-upload">
-            Choose File
-        </label>
-        <input id="file-upload" onchange="fileChange(this)" type="file" file-model="javaFile"/>
-        <button ng-click="uploadFile()" class="btn btn-success" >Upload File</button>
-        <br/>
-        <div ng-show="loading">
-            <div class="text-success"><h3>Loading...</h3></div>
-        </div>
-        <div ng-model="result" ng-repeat="message in result">
-            <p>{{ message }}</p>
-        </div>
-        <div ng-show="accepted" class="text-success">
-             <h3>Code style accepted <span class="glyphicon glyphicon-ok"></span></h3>
-        </div>
-    </div>
+    <br/>
+    <ul class="nav nav-pills" >
+        <li role="presentation" ng-class="{active:isSelect(1)}" ng-click="select(1)"><a href="#">Style Check</a></li>
+        <li role="presentation" ng-class="{active:isSelect(2)}" ng-click="select(2)"><a href="#">Bugs Find</a></li>
+        <li role="presentation" ng-class="{active:isSelect(3)}" ng-click="select(3)"><a href="#">Help</a></li>
+    </ul>
+    <br/>
+    <style-check ng-show="isSelect(1)"></style-check>
 
 </div>
 
