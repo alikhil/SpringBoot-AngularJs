@@ -47,6 +47,10 @@ public class UploadController {
         }
     }
 
+    private String getDirSeparator() {
+        return System.getProperty("os.name").contains("Windows") ? "\\" : "/";
+    }
+
     @RequestMapping(value = "/checkForBugs", method = RequestMethod.POST)
     public @ResponseBody CheckResult uploadAndCheckForBugs(@RequestParam("file") MultipartFile file){
         if (!file.isEmpty()){
@@ -107,7 +111,7 @@ public class UploadController {
     }
 
     private void deleteGeneratedFiles(String path) throws IOException {
-        String dirName = path.substring(0, path.lastIndexOf("\\"));
+        String dirName = path.substring(0, path.lastIndexOf(getDirSeparator()));
         deleteDirectory(new File(dirName));
     }
 
@@ -130,8 +134,9 @@ public class UploadController {
 
     private String uploadFile(MultipartFile file) throws IOException {
         String sRootPath = new File("").getAbsolutePath();
-        String filesDirectory = sRootPath + "\\javaUploads\\" + UUID.randomUUID().toString();
-        String name = filesDirectory + "\\" + file.getOriginalFilename();
+        String filesDirectory = String.format("%1$s%2$sjavaUploads%2$s%3$s", sRootPath,
+                        getDirSeparator(), UUID.randomUUID().toString());
+        String name = filesDirectory + getDirSeparator() + file.getOriginalFilename();
 
         boolean dirCreated = new File(filesDirectory).mkdirs();
         if (!dirCreated)
