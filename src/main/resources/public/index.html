@@ -17,6 +17,8 @@
 <body ng-app="upload">
 <div class="container" ng-controller="panelController as panelCtrl">
 
+
+
     <br/>
     <ul class="nav nav-pills" >
         <li role="presentation" ng-class="{active:isSelect(1)}" ng-click="select(1)"><a href="#">Style Check</a></li>
@@ -33,9 +35,9 @@
     <script src="js/upload.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script type="text/javascript">
-        function fileChange(data) {
+        function fileChange(data, id) {
             $fileName = data.files.length ? data.files[0].name : '';
-            $("#file-name").text($fileName);
+            $("#" + id).text($fileName);
         }
     </script>
 </body>

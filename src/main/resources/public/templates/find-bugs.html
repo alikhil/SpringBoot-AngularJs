@@ -1,4 +1,21 @@
 <div class="jumbotron">
-    <h2>Check for bugs in your code</h2>
-    <p>Coming soon...</p>
+    <h2>Find bugs in your code</h2>
+    <p>Select .class file</p>
+    <p><a href="http://findbugs.sourceforge.net/bugDescriptions.html">Bug descriptions</a></p>
+    <div id="file-name-find-bugs"></div>
+    <input id="file-upload-find-bugs" onchange="fileChange(this, 'file-name-find-bugs')" type="file" file-model="javaFile"/>
+    <label for="file-upload-find-bugs" class="btn btn-info custom-file-upload">
+        Choose File
+    </label>
+    <button ng-click="uploadFile()" class="btn btn-success" >Upload File</button>
+    <br/>
+    <div ng-show="loading">
+        <div class="text-success"><h3>Loading...</h3></div>
+    </div>
+    <div ng-model="result" ng-repeat="message in result">
+        <p>{{ message }}</p>
+    </div>
+    <div ng-show="accepted" class="text-success">
+        <h3>Bugs not found <span class="glyphicon glyphicon-ok"></span></h3>
+    </div>
 </div>

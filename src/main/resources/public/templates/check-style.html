@@ -2,13 +2,11 @@
     <h2>Check your code style</h2>
     <p>Select .java file</p>
 
-    <div id="file-name">
-
-    </div>
+    <div id="file-name"></div>
+    <input id="file-upload" onchange="fileChange(this, 'file-name')" type="file" file-model="javaFile"/>
     <label for="file-upload" class="btn btn-info custom-file-upload">
         Choose File
     </label>
-    <input id="file-upload" onchange="fileChange(this)" type="file" file-model="javaFile"/>
     <button ng-click="uploadFile()" class="btn btn-success" >Upload File</button>
     <br/>
     <div ng-show="loading">

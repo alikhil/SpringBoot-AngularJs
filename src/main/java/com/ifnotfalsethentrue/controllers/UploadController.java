@@ -5,8 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -15,7 +13,7 @@ import java.util.UUID;
 public class UploadController {
 
     @RequestMapping(value="/upload", method=RequestMethod.POST)
-    public @ResponseBody CheckResult handleFileUpload(@RequestParam("file") MultipartFile file){
+    public @ResponseBody CheckResult uploadAndCheckStyle(@RequestParam("file") MultipartFile file){
         if (!file.isEmpty()) {
             try {
                 String filename = file.getOriginalFilename();
@@ -27,13 +25,10 @@ public class UploadController {
                 if (file.getSize() > 1024 * 1024)
                     return new CheckResult("File must be less than 1MB");
 
-                String path = uploadJavaFile(file);
-                ArrayList<String> results = checkStyle(path);
-                for (int i = 0; i < results.size();i++ ) {
-                    String result = results.get(i);
-                    results.set(i, result.replace(path, filename));
-                }
-                deleteJavaFile(path);
+                String path = uploadFile(file);
+                ArrayList<String> results = executeCommand("checkstyle-algs4", path);
+                replaceStringsInList(filename, path, results);
+                deleteGeneratedFiles(path);
                 return new CheckResult(results);
             }
             catch (IOException e) {
@@ -45,16 +40,46 @@ public class UploadController {
         }
     }
 
-    private void deleteJavaFile(String path) throws IOException {
-        Files.deleteIfExists(Paths.get(path));
-        String dirName = path.substring(0, path.lastIndexOf("\\"));
-        Files.deleteIfExists(Paths.get(dirName));
+    private void replaceStringsInList(String newVal, String path, ArrayList<String> results) {
+        for (int i = 0; i < results.size();i++ ) {
+            String result = results.get(i);
+            results.set(i, result.replace(path, newVal));
+        }
     }
 
-    private static ArrayList<String> checkStyle(String path) throws IOException {
+    @RequestMapping(value = "/checkForBugs", method = RequestMethod.POST)
+    public @ResponseBody CheckResult uploadAndCheckForBugs(@RequestParam("file") MultipartFile file){
+        if (!file.isEmpty()){
+            try {
+                String filename = file.getOriginalFilename();
+                String extension = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
+
+                if (!extension.equalsIgnoreCase("class"))
+                    return new CheckResult("Choose .class file!");
+
+                if (file.getSize() > 5 *1024 * 1024)
+                    return new CheckResult("File must be less than 5MB");
+
+                String path = uploadFile(file);
+                ArrayList<String> foundBugs =  executeCommand("findbugs-algs4", path);
+                replaceStringsInList(filename, path, foundBugs);
+                deleteGeneratedFiles(path);
+                return new CheckResult(foundBugs);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new CheckResult(e.getMessage());
+            }
+        }
+        else {
+            return new CheckResult("You failed to upload " + file.getOriginalFilename() + " because the file was empty.");
+        }
+    }
+
+    private ArrayList<String> executeCommand(String command, String path) throws IOException {
         Runtime rt = Runtime.getRuntime();
-        String checkerRunCommand = getChecker(System.getProperty("os.name"));
-        Process proc = rt.exec(checkerRunCommand + path);
+        String finalCommand = formatCommand(command, path);
+        Process proc = rt.exec(finalCommand);
 
         BufferedReader stdInput = new BufferedReader(new
                 InputStreamReader(proc.getInputStream()));
@@ -74,13 +99,36 @@ public class UploadController {
         return result;
     }
 
-    private static String getChecker(String osName) {
-        if (osName.contains("Windows"))
-            return "cmd.exe /c checkstyle-algs4 ";
-        return "checkstyle-algs4 ";
+    private String formatCommand(String command, String path) {
+        String commandPrefix = "";
+        if (System.getProperty("os.name").contains("Windows"))
+            commandPrefix = "cmd.exe /c ";
+        return String.format("%1$s%2$s %3$s", commandPrefix, command, path);
     }
 
-    private String uploadJavaFile (MultipartFile file) throws IOException {
+    private void deleteGeneratedFiles(String path) throws IOException {
+        String dirName = path.substring(0, path.lastIndexOf("\\"));
+        deleteDirectory(new File(dirName));
+    }
+
+    public static boolean deleteDirectory(File directory) {
+        if(directory.exists()){
+            File[] files = directory.listFiles();
+            if(null != files){
+                for(int i = 0; i < files.length; i++) {
+                    if(files[i].isDirectory()) {
+                        deleteDirectory(files[i]);
+                    }
+                    else {
+                        files[i].delete();
+                    }
+                }
+            }
+        }
+        return(directory.delete());
+    }
+
+    private String uploadFile(MultipartFile file) throws IOException {
         String sRootPath = new File("").getAbsolutePath();
         String filesDirectory = sRootPath + "\\javaUploads\\" + UUID.randomUUID().toString();
         String name = filesDirectory + "\\" + file.getOriginalFilename();

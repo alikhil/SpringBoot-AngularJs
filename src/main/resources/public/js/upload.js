@@ -18,7 +18,7 @@
     }]);
 
     app.service('fileUpload', ['$http', function ($http) {
-        this.uploadFileToUrl = function(file, uploadUrl, scope){
+        this.uploadFileToUrl = function(file, uploadUrl, scope, accepted){
             var fd = new FormData();
             fd.append('file', file);
 
@@ -32,8 +32,7 @@
                     console.log(data);
                     scope.result = data.result;
                     scope.loading = false;
-                    if (data.result.length === 3 && data.result[2] === "Audit done."
-                    && data.result[1] === "Starting audit...")
+                    if (accepted(data.result))
                         scope.accepted = true;
                 })
 
@@ -48,7 +47,7 @@
     app.directive('styleCheck', function() {
         return {
             restrict: 'E',
-            templateUrl: 'templates/style-check.html',
+            templateUrl: 'templates/check-style.html',
             controller: ['$scope', 'fileUpload', function ($scope, fileUpload) {
                 $scope.result = [];
                 $scope.loading = false;
@@ -59,7 +58,10 @@
                     var file = $scope.javaFile;
                     $scope.loading = true;
                     var uploadUrl = "/upload";
-                    fileUpload.uploadFileToUrl(file, uploadUrl, $scope);
+                    fileUpload.uploadFileToUrl(file, uploadUrl, $scope, function(result) {
+                        return result.length === 3 && result[2] === "Audit done."
+                        && result[1] === "Starting audit...";
+                    });
                 };
 
             }],
@@ -81,7 +83,26 @@
     app.directive('findBugs', function () {
         return {
             restrict: 'E',
-            templateUrl: 'templates/find-bugs.html'
+            templateUrl: 'templates/find-bugs.html',
+            scope : {},
+            controller:  ['$scope', 'fileUpload', function ($scope, fileUpload) {
+            $scope.result = [];
+            $scope.loading = false;
+            $scope.accepted = false;
+
+            $scope.uploadFile = function () {
+                console.log("fb - start upload");
+                $scope.accepted = false;
+                var file = $scope.javaFile;
+                $scope.loading = true;
+                var uploadUrl = "/checkForBugs";
+                fileUpload.uploadFileToUrl(file, uploadUrl, $scope, function(result){
+                    return (result.length == 1 && result[0].indexOf("Running findbugs on ") > -1);
+                });
+            };
+
+        }],
+            controllerAs: 'upCtrl'
         };
     });
 
