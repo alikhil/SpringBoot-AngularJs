@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @RestController
@@ -38,6 +40,49 @@ public class UploadController {
         } else {
             return new CheckResult("You failed to upload " + file.getOriginalFilename() + " because the file was empty.");
         }
+    }
+
+    @RequestMapping(value="/saveToFile", method=RequestMethod.POST)
+    public @ResponseBody CheckResult saveToFileAndCheckStyle(@RequestParam("code") String code) throws IOException {
+        if (code.length() != 0) {
+            if (code.length() > 1024 * 1024)
+                return new CheckResult("File must be less than 1MB.");
+            String filename = getFileName(code);
+            System.out.println("filename:" + filename);
+            String path = saveToFile(code, filename);
+            ArrayList<String> results = executeCommand("checkstyle-algs4", path);
+            replaceStringsInList(filename, path, results);
+            deleteGeneratedFiles(path);
+            return new CheckResult(results);
+        } else {
+            return new CheckResult("You failed to upload code.");
+        }
+    }
+
+    private String saveToFile(String code, String filename) throws IOException {
+
+        String sRootPath = new File("").getAbsolutePath();
+        String filesDirectory = String.format("%1$s%2$sjavaUploads%2$s%3$s", sRootPath,
+                getDirSeparator(), UUID.randomUUID().toString());
+        String path = filesDirectory + getDirSeparator() + filename;
+
+        boolean dirCreated = new File(filesDirectory).mkdirs();
+        if (!dirCreated)
+            throw new IOException("Can not create a upload directory : " + filesDirectory);
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+        writer.write(code);
+        writer.close();
+        return path;
+    }
+
+    private String getFileName(String code) {
+        Pattern classPattern = Pattern.compile("public class (\\w+)");
+        Matcher m = classPattern.matcher(code);
+        System.out.println(code);
+      if(m.find())
+          return m.group(1) + ".java";
+      return "NotFound.java";
     }
 
     private void replaceStringsInList(String newVal, String path, ArrayList<String> results) {

@@ -1,6 +1,7 @@
 (function(){
     var app = angular.module('upload', []);
 
+
     app.directive('fileModel', ['$parse', function ($parse) {
         return {
             restrict: 'A',
@@ -41,10 +42,36 @@
                     console.log(data);
                     scope.loading = false;
                 });
+        };
+        this.sendCode = function(code, url, scope, accepted) {
+            var fd = new FormData();
+            fd.append('code', code);
+
+            $http.post(url, fd, {
+                    transformRequest: angular.identity,
+                    headers: {'Content-Type':undefined}
+                  })
+                  .success(function(data) {
+                    console.log('Code sent!');
+                    console.log(data);
+                    scope.result = data.result;
+                    scope.loading = false;
+                    if (accepted(data.result))
+                        scope.accepted = true;
+                  })
+                  .error(function(data){
+                      console.log('Failed to send file');
+                      console.log(data);
+                      scope.loading = false;
+                  });
         }
     }]);
 
     app.directive('styleCheck', function() {
+        check_accept = function(result) {
+            return result.length === 3 && result[2] === "Audit done."
+            && result[1] === "Starting audit...";
+        };
         return {
             restrict: 'E',
             templateUrl: 'templates/check-style.html',
@@ -58,10 +85,15 @@
                     var file = $scope.javaFile;
                     $scope.loading = true;
                     var uploadUrl = "/upload";
-                    fileUpload.uploadFileToUrl(file, uploadUrl, $scope, function(result) {
-                        return result.length === 3 && result[2] === "Audit done."
-                        && result[1] === "Starting audit...";
-                    });
+                    fileUpload.uploadFileToUrl(file, uploadUrl, $scope, check_accept);
+                };
+
+                $scope.saveCode = function () {
+                  console.log($scope.code);
+                  $scope.accepted = false;
+                  $scope.loading = true;
+                  var url = "/saveToFile";
+                  fileUpload.sendCode($scope.code, url, $scope, check_accept);
                 };
 
             }],
@@ -113,4 +145,3 @@
         };
     });
 })();
-
