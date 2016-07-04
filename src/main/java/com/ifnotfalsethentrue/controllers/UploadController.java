@@ -80,9 +80,9 @@ public class UploadController {
         Pattern classPattern = Pattern.compile("public class (\\w+)");
         Matcher m = classPattern.matcher(code);
         System.out.println(code);
-      if(m.find())
-          return m.group(1) + ".java";
-      return "NotFound.java";
+        if(m.find())
+            return m.group(1) + ".java";
+        return "NotFound.java";
     }
 
     private void replaceStringsInList(String newVal, String path, ArrayList<String> results) {

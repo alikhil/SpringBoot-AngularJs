@@ -46,7 +46,7 @@
         this.sendCode = function(code, url, scope, accepted) {
             var fd = new FormData();
             fd.append('code', code);
-
+            scope.showCode = false;
             $http.post(url, fd, {
                     transformRequest: angular.identity,
                     headers: {'Content-Type':undefined}
@@ -56,8 +56,17 @@
                     console.log(data);
                     scope.result = data.result;
                     scope.loading = false;
+                    scope.showCode = true;
                     if (accepted(data.result))
                         scope.accepted = true;
+
+                    var element = document.getElementById('highlighted-div');
+                    while (element.firstChild) {
+                        element.removeChild(element.firstChild);
+                    }
+                    element.insertAdjacentHTML('beforeend', '<pre id="highlighted-code" class="brush: java;">'+ scope.code +'</div>')
+                    SyntaxHighlighter.highlight(element.firstChild);
+                    //SyntaxHighlighter.all();
                   })
                   .error(function(data){
                       console.log('Failed to send file');
